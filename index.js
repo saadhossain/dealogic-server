@@ -58,14 +58,14 @@ const dbConnect = () => {
         const result = await productsCollection.find(query).toArray()
         res.send(result)
     })
-    //Update a product status
+    //Update a product status and Boost/Promote a Product
     app.put('/products/:id', async(req, res)=>{
         const id = req.params.id;
-        const status = req.body;
+        const update = req.body;
         const filter = {_id: ObjectId(id)}
         const options = {upsert: true};
         const updatedProduct = {
-            $set: status
+            $set: update
         }
         const result = await productsCollection.updateOne(filter, updatedProduct, options)
         res.send(result)
