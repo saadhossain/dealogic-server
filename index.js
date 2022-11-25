@@ -49,6 +49,16 @@ const dbConnect = () => {
         const products = await productsCollection.find(query).toArray()
         res.send(products)
     })
+    //Get Products added by a user
+    app.get('/products', async(req, res)=> {
+        const email = req.query.email;
+        console.log(email);
+        const query = {
+            sellerEmail: email
+        }
+        const result = await productsCollection.find(query).toArray()
+        res.send(result)
+    })
 }
 
 dbConnect()
