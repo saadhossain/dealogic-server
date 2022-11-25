@@ -70,6 +70,13 @@ const dbConnect = () => {
         const result = await productsCollection.updateOne(filter, updatedProduct, options)
         res.send(result)
     })
+    //Delete a Specific product from listing
+    app.delete('/products/:id', async(req, res)=> {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)}
+        const result = await productsCollection.deleteOne(query);
+        res.send(result)
+    })
 }
 
 dbConnect()
