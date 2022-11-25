@@ -4,7 +4,7 @@ const app = express()
 const port = process.env.PORT || 5000
 require('dotenv').config()
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 
 app.use(cors())
@@ -36,7 +36,7 @@ const dbConnect = () => {
     //Save new Product from the database
     app.post('/products', async(req,res)=> {
         const newProduct = req.body;
-        const result = await products.insertOne(newProduct)
+        const result = await productsCollection.insertOne(newProduct)
         res.send(result)
     })
 
@@ -52,11 +52,22 @@ const dbConnect = () => {
     //Get Products added by a user
     app.get('/products', async(req, res)=> {
         const email = req.query.email;
-        console.log(email);
         const query = {
             sellerEmail: email
         }
         const result = await productsCollection.find(query).toArray()
+        res.send(result)
+    })
+    //Update a product status
+    app.put('/products/:id', async(req, res)=>{
+        const id = req.params.id;
+        const status = req.body;
+        const filter = {_id: ObjectId(id)}
+        const options = {upsert: true};
+        const updatedProduct = {
+            $set: status
+        }
+        const result = await productsCollection.updateOne(filter, updatedProduct, options)
         res.send(result)
     })
 }
