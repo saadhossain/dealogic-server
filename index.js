@@ -16,7 +16,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 const dbConnect = () => {
     const categories = client.db('innova').collection('categories')
-    const products = client.db('innova').collection('products')
+    const productsCollection = client.db('innova').collection('products')
     const users = client.db('innova').collection('users')
 
     //Get the Category from the database
@@ -38,6 +38,16 @@ const dbConnect = () => {
         const newProduct = req.body;
         const result = await products.insertOne(newProduct)
         res.send(result)
+    })
+
+    //Get Products for a specific category
+    app.get('/products/:category', async(req, res)=> {
+        const category = req.params.category;
+        const query = {
+            productCategory: category
+        }
+        const products = await productsCollection.find(query).toArray()
+        res.send(products)
     })
 }
 
