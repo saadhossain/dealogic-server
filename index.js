@@ -57,7 +57,7 @@ const dbConnect = () => {
         const query = {
             promoted: true
         }
-        const promotedProducts = await productsCollection.find(query).toArray()
+        const promotedProducts = await productsCollection.find(query).limit(8).toArray()
         res.send(promotedProducts)
     })
     //Update a product status and Boost/Promote a Product
