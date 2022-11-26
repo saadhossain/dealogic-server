@@ -52,6 +52,14 @@ const dbConnect = () => {
         const result = await productsCollection.find(query).toArray()
         res.send(result)
     })
+    //Get Promoted/Boosted products
+    app.get('/promoted', async(req, res)=> {
+        const query = {
+            promoted: true
+        }
+        const promotedProducts = await productsCollection.find(query).toArray()
+        res.send(promotedProducts)
+    })
     //Update a product status and Boost/Promote a Product
     app.put('/products/:id', async (req, res) => {
         const id = req.params.id;
