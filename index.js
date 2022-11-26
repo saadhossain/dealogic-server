@@ -18,6 +18,7 @@ const dbConnect = () => {
     const categories = client.db('innova').collection('categories')
     const productsCollection = client.db('innova').collection('products')
     const users = client.db('innova').collection('users')
+    const bookedProducts = client.db('innova').collection('bookedproducts')
 
     //Get the Category from the database
     app.get('/categories', async(req, res)=> {
@@ -75,6 +76,12 @@ const dbConnect = () => {
         const id = req.params.id;
         const query = {_id: ObjectId(id)}
         const result = await productsCollection.deleteOne(query);
+        res.send(result)
+    })
+    //Book a Product
+    app.post('/products/book', async(req, res)=> {
+        const product = req.body
+        const result = await bookedProducts.insertOne(product)
         res.send(result)
     })
 }
