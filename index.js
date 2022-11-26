@@ -21,28 +21,21 @@ const dbConnect = () => {
     const bookedProducts = client.db('innova').collection('bookedproducts')
 
     //Get the Category from the database
-    app.get('/categories', async(req, res)=> {
+    app.get('/categories', async (req, res) => {
         const query = {}
         const category = await categories.find(query).toArray()
         res.send(category)
     })
 
-    //Save new user to the Database
-    app.post('/users', async(req,res)=> {
-        const user = req.body;
-        const result = await users.insertOne(user)
-        res.send(result)
-    })
-
     //Save new Product from the database
-    app.post('/products', async(req,res)=> {
+    app.post('/products', async (req, res) => {
         const newProduct = req.body;
         const result = await productsCollection.insertOne(newProduct)
         res.send(result)
     })
 
     //Get Products for a specific category
-    app.get('/products/:category', async(req, res)=> {
+    app.get('/products/:category', async (req, res) => {
         const category = req.params.category;
         const query = {
             productCategory: category
@@ -51,7 +44,7 @@ const dbConnect = () => {
         res.send(products)
     })
     //Get Products added by a user
-    app.get('/products', async(req, res)=> {
+    app.get('/products', async (req, res) => {
         const email = req.query.email;
         const query = {
             sellerEmail: email
@@ -60,11 +53,11 @@ const dbConnect = () => {
         res.send(result)
     })
     //Update a product status and Boost/Promote a Product
-    app.put('/products/:id', async(req, res)=>{
+    app.put('/products/:id', async (req, res) => {
         const id = req.params.id;
         const update = req.body;
-        const filter = {_id: ObjectId(id)}
-        const options = {upsert: true};
+        const filter = { _id: ObjectId(id) }
+        const options = { upsert: true };
         const updatedProduct = {
             $set: update
         }
@@ -72,27 +65,49 @@ const dbConnect = () => {
         res.send(result)
     })
     //Delete a Specific product from listing
-    app.delete('/products/:id', async(req, res)=> {
+    app.delete('/products/:id', async (req, res) => {
         const id = req.params.id;
-        const query = {_id: ObjectId(id)}
+        const query = { _id: ObjectId(id) }
         const result = await productsCollection.deleteOne(query);
         res.send(result)
     })
     //Book a Product
-    app.post('/products/book', async(req, res)=> {
+    app.post('/products/book', async (req, res) => {
         const product = req.body
         const result = await bookedProducts.insertOne(product)
         res.send(result)
+    })
+    //Get a Booked Product for a specific buyer
+    app.get('/mypurchase', async (req, res) => {
+        const email = req.query.email
+        const query = { buyerEmail: email }
+        const result = await bookedProducts.find(query).toArray()
+        res.send(result)
+    })
+    //Save new user to the Database
+    app.post('/users', async (req, res) => {
+        const user = req.body;
+        const result = await users.insertOne(user)
+        res.send(result)
+    })
+    //Get a Specific user from the database
+    app.get('/users', async (req, res) => {
+        const email = req.query.email
+        const query = {
+            email: email
+        }
+        const user = await users.find(query).toArray()
+        res.send(user)
     })
 }
 
 dbConnect()
 //Default Route
-app.get('/', (req,res)=> {
+app.get('/', (req, res) => {
     res.send('Innova Server is Running....')
 })
 
 //Add a Listener to the app
-app.listen(port, ()=> {
+app.listen(port, () => {
     console.log('Server Running on Port:', port);
 })
