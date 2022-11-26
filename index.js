@@ -33,7 +33,12 @@ const dbConnect = () => {
         const result = await productsCollection.insertOne(newProduct)
         res.send(result)
     })
-
+    //Get all the Products from the database
+    app.get('/products', async(req, res)=> {
+        const query = {}
+        const products = await productsCollection.find(query).toArray()
+        res.send(products)
+    })
     //Get Products for a specific category
     app.get('/products/:category', async (req, res) => {
         const category = req.params.category;
@@ -85,6 +90,12 @@ const dbConnect = () => {
         const result = await bookedProducts.insertOne(product)
         res.send(result)
     })
+    //Get all booked products
+    app.get('/booked', async(req, res)=> {
+        const query = {}
+        const bookedProduct = await bookedProducts.find(query).toArray()
+        res.send(bookedProduct)
+    })
     //Get a Booked Product for a specific buyer
     app.get('/mypurchase', async (req, res) => {
         const email = req.query.email
@@ -97,6 +108,12 @@ const dbConnect = () => {
         const user = req.body;
         const result = await users.insertOne(user)
         res.send(result)
+    })
+    //Get All users from the database
+    app.get('/users', async(req, res)=> {
+        const query = {}
+        const allUser = await users.find(query).toArray()
+        res.send(allUser)
     })
     //Get a Specific user from the database
     app.get('/users', async (req, res) => {
