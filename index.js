@@ -60,7 +60,8 @@ const dbConnect = () => {
     //Get Promoted/Boosted products
     app.get('/promoted', async(req, res)=> {
         const query = {
-            promoted: true
+            promoted: true,
+            booked: false
         }
         const promotedProducts = await productsCollection.find(query).limit(8).toArray()
         res.send(promotedProducts)
@@ -115,8 +116,8 @@ const dbConnect = () => {
         const allUser = await users.find(query).toArray()
         res.send(allUser)
     })
-    //Get a Specific user from the database
-    app.get('/users', async (req, res) => {
+    //Get a Specific user //Logged In from the database
+    app.get('/user', async (req, res) => {
         const email = req.query.email
         const query = {
             email: email
