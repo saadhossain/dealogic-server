@@ -3,7 +3,8 @@ const app = express()
 
 const port = process.env.PORT || 5000
 require('dotenv').config()
-
+//Json web token
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 
@@ -49,7 +50,7 @@ const dbConnect = () => {
         res.send(products)
     })
     //Get Products added by a user
-    app.get('/products', async (req, res) => {
+    app.get('/products/seller', async (req, res) => {
         const email = req.query.email;
         const query = {
             sellerEmail: email
