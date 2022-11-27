@@ -107,6 +107,11 @@ const dbConnect = () => {
     //Save new user to the Database
     app.post('/users', async (req, res) => {
         const user = req.body;
+        const exists = users.find(usr => usr.email === user.email)
+        console.log(user);
+        if(exists){
+            return res.send({message: 'User Already Exists'})
+        }
         const result = await users.insertOne(user)
         res.send(result)
     })
@@ -124,6 +129,29 @@ const dbConnect = () => {
         }
         const user = await users.find(query).toArray()
         res.send(user)
+    })
+    //Get All Buyers from the database
+    app.get('/users/buyers', async(req, res)=>{
+        const query = {
+            accountType: 'Buyer'
+        }
+        const buyers = await users.find(query).toArray()
+        res.send(buyers)
+    })
+    //Get All Seller from the database
+    app.get('/users/sellers', async(req, res)=>{
+        const query = {
+            accountType: 'Seller'
+        }
+        const sellers = await users.find(query).toArray()
+        res.send(sellers)
+    })
+    //Delete a user
+    app.delete('/users/:id', async(req, res)=> {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)}
+        const result = await users.deleteOne(query)
+        res.send(result)
     })
 }
 
