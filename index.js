@@ -155,6 +155,18 @@ const dbConnect = () => {
         const result = await users.deleteOne(query)
         res.send(result)
     })
+    //Update a User
+    app.put('/users/:id', async(req, res)=> {
+        const id = req.params.id
+        const filter = {_id: ObjectId(id)}
+        const update = req.body
+        const options = {upsert: true}
+        const updatedUser = {
+            $set: update
+        }
+        const result = await users.updateOne(filter, updatedUser, options)
+        res.send(result)
+    })
 }
 
 dbConnect()
