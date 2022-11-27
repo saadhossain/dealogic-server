@@ -107,9 +107,11 @@ const dbConnect = () => {
     //Save new user to the Database
     app.post('/users', async (req, res) => {
         const user = req.body;
-        const exists = users.find(usr => usr.email === user.email)
-        console.log(user);
-        if(exists){
+        const query = {
+            email: user.email
+        }
+        const exists = await users.find(query).toArray()
+        if(exists.length){
             return res.send({message: 'User Already Exists'})
         }
         const result = await users.insertOne(user)
