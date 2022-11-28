@@ -217,7 +217,7 @@ const dbConnect = () => {
     app.get('/blogs/:id', async(req, res)=>{
         const id = req.params.id
         const query = {_id: ObjectId(id)}
-        const blog = await blogs.findOne(query).toArray()
+        const blog = await blogs.find(query).toArray()
         res.send(blog)
     })
 }
