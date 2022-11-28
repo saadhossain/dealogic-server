@@ -14,7 +14,27 @@ app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-
+//Genarate JWT Token for the user
+app.post('/accesstoken', async (req, res) => {
+    const user = req.body
+    const token = jwt.sign({user}, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+    res.send({ token })
+})
+//Verify Token Send by user while requesting for a data
+const verifyToken = (req, res, next) => {
+    const authToken = req.headers.authorization;
+    if (!authToken) {
+        return res.status(401).send({ message: 'You are not authorized to get this data' })
+    }
+    const token = authToken.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'You are not authorized to get this data' })
+        }
+        req.decoded = decoded
+        next()
+    })
+}
 const dbConnect = () => {
     const categories = client.db('innova').collection('categories')
     const productsCollection = client.db('innova').collection('products')
@@ -35,7 +55,7 @@ const dbConnect = () => {
         res.send(result)
     })
     //Get all the Products from the database
-    app.get('/products', async(req, res)=> {
+    app.get('/products', async (req, res) => {
         const query = {}
         const products = await productsCollection.find(query).toArray()
         res.send(products)
@@ -50,8 +70,12 @@ const dbConnect = () => {
         res.send(products)
     })
     //Get Products added by a user
-    app.get('/products/seller', async (req, res) => {
+    app.get('/products/seller', verifyToken, async (req, res) => {
         const email = req.query.email;
+        const decoded = req.decoded
+        if(decoded.email !== email){
+            return res.status(403).send({message: 'Data Forbidden for you'})
+        }
         const query = {
             sellerEmail: email
         }
@@ -59,7 +83,7 @@ const dbConnect = () => {
         res.send(result)
     })
     //Get Promoted/Boosted products
-    app.get('/promoted', async(req, res)=> {
+    app.get('/promoted', async (req, res) => {
         const query = {
             promoted: true,
             booked: false
@@ -93,14 +117,18 @@ const dbConnect = () => {
         res.send(result)
     })
     //Get all booked products
-    app.get('/booked', async(req, res)=> {
+    app.get('/booked', async (req, res) => {
         const query = {}
         const bookedProduct = await bookedProducts.find(query).toArray()
         res.send(bookedProduct)
     })
     //Get a Booked Product for a specific buyer
-    app.get('/mypurchase', async (req, res) => {
+    app.get('/mypurchase', verifyToken, async (req, res) => {
         const email = req.query.email
+        const decoded = req.decoded
+        if(decoded.email !== email){
+            return res.status(403).send({message: 'Data Forbidden for you'})
+        }
         const query = { buyerEmail: email }
         const result = await bookedProducts.find(query).toArray()
         res.send(result)
@@ -112,14 +140,14 @@ const dbConnect = () => {
             email: user.email
         }
         const exists = await users.find(query).toArray()
-        if(exists.length){
-            return res.send({message: 'User Already Exists'})
+        if (exists.length) {
+            return res.send({ message: 'User Already Exists' })
         }
         const result = await users.insertOne(user)
         res.send(result)
     })
     //Get All users from the database
-    app.get('/users', async(req, res)=> {
+    app.get('/users', async (req, res) => {
         const query = {}
         const allUser = await users.find(query).toArray()
         res.send(allUser)
@@ -134,7 +162,7 @@ const dbConnect = () => {
         res.send(user)
     })
     //Get All Buyers from the database
-    app.get('/users/buyers', async(req, res)=>{
+    app.get('/users/buyers', async (req, res) => {
         const query = {
             accountType: 'Buyer'
         }
@@ -142,7 +170,7 @@ const dbConnect = () => {
         res.send(buyers)
     })
     //Get All Seller from the database
-    app.get('/users/sellers', async(req, res)=>{
+    app.get('/users/sellers', async (req, res) => {
         const query = {
             accountType: 'Seller'
         }
@@ -150,18 +178,18 @@ const dbConnect = () => {
         res.send(sellers)
     })
     //Delete a user
-    app.delete('/users/:id', async(req, res)=> {
+    app.delete('/users/:id', async (req, res) => {
         const id = req.params.id;
-        const query = {_id: ObjectId(id)}
+        const query = { _id: ObjectId(id) }
         const result = await users.deleteOne(query)
         res.send(result)
     })
     //Update a User
-    app.put('/users/:id', async(req, res)=> {
+    app.put('/users/:id', async (req, res) => {
         const id = req.params.id
-        const filter = {_id: ObjectId(id)}
+        const filter = { _id: ObjectId(id) }
         const update = req.body
-        const options = {upsert: true}
+        const options = { upsert: true }
         const updatedUser = {
             $set: update
         }
