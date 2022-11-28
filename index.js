@@ -214,7 +214,7 @@ const dbConnect = () => {
     })
 
     //Get a specific blog 
-    app.get('/blogs/:id', async(res, res)=>{
+    app.get('/blogs/:id', async(req, res)=>{
         const id = req.params.id
         const query = {_id: ObjectId(id)}
         const blog = await blogs.findOne(query).toArray()
