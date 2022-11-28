@@ -41,6 +41,7 @@ const dbConnect = () => {
     const productsCollection = client.db('innova').collection('products')
     const users = client.db('innova').collection('users')
     const bookedProducts = client.db('innova').collection('bookedproducts')
+    const blogs = client.db('innova').collection('blogs')
 
     //Get the Category from the database
     app.get('/categories', async (req, res) => {
@@ -195,6 +196,20 @@ const dbConnect = () => {
             $set: update
         }
         const result = await users.updateOne(filter, updatedUser, options)
+        res.send(result)
+    })
+
+    //Post a Blog
+    app.post('/blogs', async(req, res)=> {
+        const blog = req.body
+        const result = await blogs.insertOne(blog)
+        res.send(result)
+    })
+
+    //Get all blogs
+    app.get('/blogs', async(req, res)=> {
+        const query = {}
+        const result = await blogs.find(query).toArray()
         res.send(result)
     })
 }
