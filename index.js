@@ -14,6 +14,12 @@ app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+//Generate JWT Token for the user
+app.post('/accesstoken', (req, res) => {
+    const user = req.body
+    const token = jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+    res.send({ accessToken: token })
+})
 
 //Verify Token Send by user while requesting for a data
 const verifyToken = (req, res, next) => {
@@ -36,18 +42,6 @@ const dbConnect = () => {
     const users = client.db('innova').collection('users')
     const bookedProducts = client.db('innova').collection('bookedproducts')
 
-    //Generate JWT Token for the user
-    app.get('/accesstoken', async (req, res) => {
-        const email = req.query.email;
-        const query = { email: email }
-
-        const user = await users.findOne(query)
-        if (user) {
-            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
-            return res.send({ accessToken: token })
-        }
-        res.status(403).send({token: ''})
-    })
     //Get the Category from the database
     app.get('/categories', async (req, res) => {
         const query = {}
