@@ -14,12 +14,7 @@ app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-//Genarate JWT Token for the user
-app.post('/accesstoken', async (req, res) => {
-    const user = req.body
-    const token = jwt.sign({user}, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
-    res.send({ token })
-})
+
 //Verify Token Send by user while requesting for a data
 const verifyToken = (req, res, next) => {
     const authToken = req.headers.authorization;
@@ -41,6 +36,18 @@ const dbConnect = () => {
     const users = client.db('innova').collection('users')
     const bookedProducts = client.db('innova').collection('bookedproducts')
 
+    //Generate JWT Token for the user
+    app.get('/accesstoken', async (req, res) => {
+        const email = req.query.email;
+        const query = { email: email }
+
+        const user = await users.findOne(query)
+        if (user) {
+            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+            return res.send({ accessToken: token })
+        }
+        res.status(403).send({token: ''})
+    })
     //Get the Category from the database
     app.get('/categories', async (req, res) => {
         const query = {}
@@ -73,8 +80,8 @@ const dbConnect = () => {
     app.get('/products/seller', verifyToken, async (req, res) => {
         const email = req.query.email;
         const decoded = req.decoded
-        if(decoded.email !== email){
-            return res.status(403).send({message: 'Data Forbidden for you'})
+        if (decoded.email !== email) {
+            return res.status(403).send({ message: 'Data Forbidden for you' })
         }
         const query = {
             sellerEmail: email
@@ -126,8 +133,8 @@ const dbConnect = () => {
     app.get('/mypurchase', verifyToken, async (req, res) => {
         const email = req.query.email
         const decoded = req.decoded
-        if(decoded.email !== email){
-            return res.status(403).send({message: 'Data Forbidden for you'})
+        if (decoded.email !== email) {
+            return res.status(403).send({ message: 'Data Forbidden for you' })
         }
         const query = { buyerEmail: email }
         const result = await bookedProducts.find(query).toArray()
