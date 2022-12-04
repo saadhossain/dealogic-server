@@ -74,10 +74,7 @@ const dbConnect = () => {
     //Get Products added by a user
     app.get('/products/seller', verifyToken, async (req, res) => {
         const decoded = req.decoded
-        if (decoded.email !== email) {
-            return res.status(403).send({ message: 'Data Forbidden for you' })
-        }
-        console.log(decoded.email);
+        const email = req.query.email;
         if (decoded.email !== email) {
             return res.status(403).send({ message: 'Data Forbidden for you' })
         }
