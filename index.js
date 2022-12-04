@@ -17,6 +17,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 //Generate JWT Token for the user
 app.post('/accesstoken', (req, res) => {
     const user = req.body
+    console.log(user);
     const token = jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
     res.send({ accessToken: token })
 })
@@ -72,12 +73,12 @@ const dbConnect = () => {
         res.send(products)
     })
     //Get Products added by a user
-    app.get('/products/seller', verifyToken, async (req, res) => {
+    app.get('/products/seller', async (req, res) => {
         const email = req.query.email;
-        const decoded = req.decoded
-        if (decoded.email !== email) {
-            return res.status(403).send({ message: 'Data Forbidden for you' })
-        }
+        // const decoded = req.decoded
+        // if (decoded.email !== email) {
+        //     return res.status(403).send({ message: 'Data Forbidden for you' })
+        // }
         const query = {
             sellerEmail: email
         }
@@ -125,12 +126,12 @@ const dbConnect = () => {
         res.send(bookedProduct)
     })
     //Get a Booked Product for a specific buyer
-    app.get('/mypurchase', verifyToken, async (req, res) => {
+    app.get('/mypurchase', async (req, res) => {
         const email = req.query.email
-        const decoded = req.decoded
-        if (decoded.email !== email) {
-            return res.status(403).send({ message: 'Data Forbidden for you' })
-        }
+        // const decoded = req.decoded
+        // if (decoded.email !== email) {
+        //     return res.status(403).send({ message: 'Data Forbidden for you' })
+        // }
         const query = { buyerEmail: email }
         const result = await bookedProducts.find(query).toArray()
         res.send(result)
