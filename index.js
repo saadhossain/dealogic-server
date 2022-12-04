@@ -15,11 +15,10 @@ app.use(express.json())
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 //Generate JWT Token for the user
-app.post('/accesstoken', (req, res) => {
+app.post('/getToken', (req, res) => {
     const user = req.body
-    console.log(user);
-    const token = jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
-    res.send({ accessToken: token })
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+    res.send({accesstoken: token})
 })
 
 //Verify Token Send by user while requesting for a data
@@ -28,7 +27,7 @@ const verifyToken = (req, res, next) => {
     if (!authToken) {
         return res.status(401).send({ message: 'You are not authorized to get this data' })
     }
-    const token = authToken.split(' ')[1]
+    const token = authToken.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
         if (err) {
             return res.status(401).send({ message: 'You are not authorized to get this data' })
@@ -73,12 +72,15 @@ const dbConnect = () => {
         res.send(products)
     })
     //Get Products added by a user
-    app.get('/products/seller', async (req, res) => {
-        const email = req.query.email;
-        // const decoded = req.decoded
-        // if (decoded.email !== email) {
-        //     return res.status(403).send({ message: 'Data Forbidden for you' })
-        // }
+    app.get('/products/seller', verifyToken, async (req, res) => {
+        const decoded = req.decoded
+        if (decoded.email !== email) {
+            return res.status(403).send({ message: 'Data Forbidden for you' })
+        }
+        console.log(decoded.email);
+        if (decoded.email !== email) {
+            return res.status(403).send({ message: 'Data Forbidden for you' })
+        }
         const query = {
             sellerEmail: email
         }
@@ -126,12 +128,12 @@ const dbConnect = () => {
         res.send(bookedProduct)
     })
     //Get a Booked Product for a specific buyer
-    app.get('/mypurchase', async (req, res) => {
+    app.get('/mypurchase', verifyToken, async (req, res) => {
         const email = req.query.email
-        // const decoded = req.decoded
-        // if (decoded.email !== email) {
-        //     return res.status(403).send({ message: 'Data Forbidden for you' })
-        // }
+        const decoded = req.decoded
+        if (decoded.email !== email) {
+            return res.status(403).send({ message: 'Data Forbidden for you' })
+        }
         const query = { buyerEmail: email }
         const result = await bookedProducts.find(query).toArray()
         res.send(result)
