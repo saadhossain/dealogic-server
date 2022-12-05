@@ -62,6 +62,14 @@ const dbConnect = () => {
         const products = await productsCollection.find(query).toArray()
         res.send(products)
     })
+    //Get a Single Product
+    app.get('/products/:id', async(req, res)=> {
+        const id = req.params.id;
+        console.log(id);
+        const query = {_id: ObjectId(id)}
+        const product = await productsCollection.find(query).toArray()
+        res.send(product)
+    })
     //Get Products for a specific category
     app.get('/products/:category', async (req, res) => {
         const category = req.params.category;
