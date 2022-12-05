@@ -11,9 +11,10 @@ const cors = require('cors')
 app.use(cors())
 app.use(express.json())
 
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+//Stripe configuration
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
 //Generate JWT Token for the user
 app.post('/getToken', (req, res) => {
     const user = req.body
@@ -143,6 +144,18 @@ const dbConnect = () => {
         const result = await bookedProducts.find(query).toArray()
         res.send(result)
     })
+    //Update a product status after successfull payment
+    app.put('/booked/products/:id', async (req, res) => {
+        const id = req.params.id;
+        const update = req.body;
+        const filter = { _id: ObjectId(id) }
+        const options = { upsert: true };
+        const updatedProduct = {
+            $set: update
+        }
+        const result = await bookedProducts.updateOne(filter, updatedProduct, options)
+        res.send(result)
+    })
     //Save new user to the Database
     app.post('/users', async (req, res) => {
         const user = req.body;
@@ -227,6 +240,24 @@ const dbConnect = () => {
         const query = {_id: ObjectId(id)}
         const blog = await blogs.find(query).toArray()
         res.send(blog)
+    })
+
+    //Create api for create payment intension
+    app.post('/payment-intent', async(req, res)=> {
+        const product = req.body;
+        const price = product.resalePrice;
+        const paymentAmount = price * 100;
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            currency: "usd",
+            amount: paymentAmount,
+            "payment_method_types": [
+                "card"
+            ]
+          });
+        res.send({
+            clientSecret: paymentIntent.client_secret,
+        })
     })
 }
 
