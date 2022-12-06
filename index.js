@@ -42,10 +42,10 @@ const verifyToken = (req, res, next) => {
     })
 }
 const dbConnect = () => {
-    const categories = client.db('innova').collection('categories')
-    const productsCollection = client.db('innova').collection('products')
-    const users = client.db('innova').collection('users')
-    const blogs = client.db('innova').collection('blogs')
+    const categories = client.db('dealogic').collection('categories')
+    const productsCollection = client.db('dealogic').collection('products')
+    const users = client.db('dealogic').collection('users')
+    const blogs = client.db('dealogic').collection('blogs')
 
     //Get the Category from the database
     app.get('/categories', async (req, res) => {
@@ -251,7 +251,7 @@ const dbConnect = () => {
 dbConnect()
 //Default Route
 app.get('/', (req, res) => {
-    res.send('Innova Server is Running....')
+    res.send('Dealogic Server is Running....')
 })
 
 //Add a Listener to the app
