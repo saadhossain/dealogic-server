@@ -7,8 +7,12 @@ require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
-
-app.use(cors())
+const corsOptions = {
+    origin: '*',
+    credentials: true,
+    optionSuccessStatus: 200,
+}
+app.use(cors(corsOptions))
 app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
@@ -19,7 +23,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET)
 app.post('/getToken', (req, res) => {
     const user = req.body
     const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
-    res.send({accesstoken: token})
+    res.send({ accesstoken: token })
 })
 
 //Verify Token Send by user while requesting for a data
@@ -41,7 +45,6 @@ const dbConnect = () => {
     const categories = client.db('innova').collection('categories')
     const productsCollection = client.db('innova').collection('products')
     const users = client.db('innova').collection('users')
-    const bookedProducts = client.db('innova').collection('bookedproducts')
     const blogs = client.db('innova').collection('blogs')
 
     //Get the Category from the database
@@ -64,10 +67,10 @@ const dbConnect = () => {
         res.send(products)
     })
     //Get a Single Product
-    app.get('/products/:id', async(req, res)=> {
+    app.get('/products/:id', async (req, res) => {
         const id = req.params.id;
         console.log(id);
-        const query = {_id: ObjectId(id)}
+        const query = { _id: ObjectId(id) }
         const product = await productsCollection.find(query).toArray()
         res.send(product)
     })
@@ -81,7 +84,7 @@ const dbConnect = () => {
         res.send(products)
     })
     //Get Products added by a user
-    app.get('/seller/products',verifyToken, async (req, res) => {
+    app.get('/seller/products', verifyToken, async (req, res) => {
         const email = req.query.email
         const decoded = req.decoded
         if (decoded.email !== email) {
@@ -121,16 +124,12 @@ const dbConnect = () => {
         const result = await productsCollection.deleteOne(query);
         res.send(result)
     })
-    //Book a Product
-    app.post('/products/book', async (req, res) => {
-        const product = req.body
-        const result = await bookedProducts.insertOne(product)
-        res.send(result)
-    })
     //Get all booked products
     app.get('/booked', async (req, res) => {
-        const query = {}
-        const bookedProduct = await bookedProducts.find(query).toArray()
+        const query = {
+            booked: true
+        }
+        const bookedProduct = await productsCollection.find(query).toArray()
         res.send(bookedProduct)
     })
     //Get a Booked Product for a specific buyer
@@ -141,19 +140,7 @@ const dbConnect = () => {
             return res.status(403).send({ message: 'Data Forbidden for you' })
         }
         const query = { buyerEmail: email }
-        const result = await bookedProducts.find(query).toArray()
-        res.send(result)
-    })
-    //Update a product status after successfull payment
-    app.put('/booked/products/:id', async (req, res) => {
-        const id = req.params.id;
-        const update = req.body;
-        const filter = { _id: ObjectId(id) }
-        const options = { upsert: true };
-        const updatedProduct = {
-            $set: update
-        }
-        const result = await bookedProducts.updateOne(filter, updatedProduct, options)
+        const result = await productsCollection.find(query).toArray()
         res.send(result)
     })
     //Save new user to the Database
@@ -221,29 +208,29 @@ const dbConnect = () => {
     })
 
     //Post a Blog
-    app.post('/blogs', async(req, res)=> {
+    app.post('/blogs', async (req, res) => {
         const blog = req.body
         const result = await blogs.insertOne(blog)
         res.send(result)
     })
 
     //Get all blogs
-    app.get('/blogs', async(req, res)=> {
+    app.get('/blogs', async (req, res) => {
         const query = {}
         const result = await blogs.find(query).toArray()
         res.send(result)
     })
 
     //Get a specific blog 
-    app.get('/blogs/:id', async(req, res)=>{
+    app.get('/blogs/:id', async (req, res) => {
         const id = req.params.id
-        const query = {_id: ObjectId(id)}
+        const query = { _id: ObjectId(id) }
         const blog = await blogs.find(query).toArray()
         res.send(blog)
     })
 
     //Create api for create payment intension
-    app.post('/payment-intent', async(req, res)=> {
+    app.post('/payment-intent', async (req, res) => {
         const product = req.body;
         const price = product.resalePrice;
         const paymentAmount = price * 100;
@@ -254,7 +241,7 @@ const dbConnect = () => {
             "payment_method_types": [
                 "card"
             ]
-          });
+        });
         res.send({
             clientSecret: paymentIntent.client_secret,
         })
