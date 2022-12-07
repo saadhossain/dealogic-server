@@ -6,13 +6,21 @@ require('dotenv').config()
 //Json web token
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+//Require Cors
 const cors = require('cors')
+const whitelist = ['http://localhost:3000']
 const corsOptions = {
-    origin: '*',
-    credentials: true,
-    optionSuccessStatus: 200,
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
 }
 app.use(cors(corsOptions))
+
 app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
@@ -53,12 +61,20 @@ const dbConnect = () => {
         const category = await categories.find(query).toArray()
         res.send(category)
     })
-
     //Save new Product from the database
     app.post('/products', async (req, res) => {
         const newProduct = req.body;
         const result = await productsCollection.insertOne(newProduct)
         res.send(result)
+    })
+    // //Get Products for a specific category
+    app.get('/products/:category', async (req, res) => {
+        const category = req.params.category;
+        const query = {
+            productCategory: category
+        }
+        const products = await productsCollection.find(query).toArray()
+        res.send(products)
     })
     //Get all the Products from the database
     app.get('/products', async (req, res) => {
@@ -73,15 +89,6 @@ const dbConnect = () => {
         const query = { _id: ObjectId(id) }
         const product = await productsCollection.find(query).toArray()
         res.send(product)
-    })
-    //Get Products for a specific category
-    app.get('/products/:category', async (req, res) => {
-        const category = req.params.category;
-        const query = {
-            productCategory: category
-        }
-        const products = await productsCollection.find(query).toArray()
-        res.send(products)
     })
     //Get Products added by a user
     app.get('/seller/products', verifyToken, async (req, res) => {
