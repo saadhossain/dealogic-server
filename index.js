@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //Require Cors
 const cors = require('cors')
-const whitelist = ['http://localhost:3000']
+const whitelist = ['http://localhost:3000', 'https://dealogic-msh.web.app']
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.indexOf(origin) !== -1) {
@@ -225,6 +225,13 @@ const dbConnect = () => {
     app.get('/blogs', async (req, res) => {
         const query = {}
         const result = await blogs.find(query).toArray()
+        res.send(result)
+    })
+
+    //Get Limited Blogs for latest articles section in the home page
+    app.get('/latestblogs', async (req, res) => {
+        const query = {}
+        const result = await blogs.find(query).limit(3).toArray()
         res.send(result)
     })
 
