@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //Require Cors
 const cors = require('cors')
-const whitelist = ['http://localhost:3000', 'https://dealogic-msh.web.app']
+const whitelist = ['http://localhost:3000', 'https://dealogic-msh.web.app', 'https://saadhossain.dev']
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.indexOf(origin) !== -1) {
